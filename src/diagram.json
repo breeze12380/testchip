@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "author": "Uri Shaked",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-clock-generator",
+      "id": "clock1",
+      "top": -144,
+      "left": -432,
+      "attrs": { "frequency": "1" }
+    },
+    { "type": "wokwi-gnd", "id": "gnd1", "top": -201.6, "left": -403.8, "attrs": {} },
+    { "type": "wokwi-vcc", "id": "pwr5", "top": -306.44, "left": -403.2, "attrs": {} },
+    { "type": "chip-testchip", "id": "chip1", "top": -248.58, "left": -350.4, "attrs": {} },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": -272.4,
+      "left": -149.8,
+      "attrs": { "color": "green" }
+    }
+  ],
+  "connections": [
+    [ "chip1:GND", "gnd1:GND", "black", [ "h-48" ] ],
+    [ "chip1:VCC", "pwr5:VCC", "red", [ "h-48", "v0" ] ],
+    [ "chip1:CLK_IN", "clock1:CLK", "green", [ "h0" ] ],
+    [ "chip1:PWM_OUT", "led1:C", "green", [ "v0", "h107.41" ] ],
+    [ "led1:A", "gnd1:GND", "green", [ "v0" ] ]
+  ],
+  "dependencies": {}
+}
