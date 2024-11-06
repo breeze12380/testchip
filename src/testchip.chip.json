@@ -1,0 +1,18 @@
+{
+  "name": "digital_pwm_divider",
+  "author": "Jeff Wu",
+  "pins": [
+    "VCC",
+    "GND",
+    "CLK_IN",
+    "PWM_OUT"
+  ],
+  "controls": [
+    {
+      "name": "clock_divisor",
+      "type": "digital",
+      "description": "Sets the division factor for the input clock frequency",
+      "default": 10
+    }
+  ]
+}
