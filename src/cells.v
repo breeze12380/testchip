@@ -1,102 +1,52 @@
-/*
-This file provides the mapping from the Wokwi modules to Verilog HDL.
+#include "wokwi-api.h"
+#include <stdio.h>
+#include <stdlib.h>
 
-It's only needed for Wokwi designs.
-*/
+#define PWM_OUT 13  // Define the PWM output pin for the LED
 
-`define default_netname none
+typedef struct {
+  uint32_t clock_divisor;   // Divides the input clock frequency
+  uint32_t duty_cycle;      // Duty cycle percentage (0-100)
+  uint32_t counter;         // Counter for frequency division
+  uint8_t pwm_state;        // Current state of PWM output
+} chip_state_t;
 
-module buffer_cell (
-    input wire in,
-    output wire out
-    );
-    assign out = in;
-endmodule
+void chip_init() {
+  chip_state_t *chip = malloc(sizeof(chip_state_t));
+  chip->clock_divisor = 50;  // Set default division factor
+  chip->duty_cycle = 1000;     // Fixed duty cycle at 50%
+  chip->counter = 0;
+  chip->pwm_state = 0;
 
-module and_cell (
-    input wire a,
-    input wire b,
-    output wire out
-    );
+  // Initialize the PWM_OUT pin as an output
+  pin_mode(PWM_OUT, 1);  // Use 1 for OUTPUT mode in Wokwi API
+  printf("Digital Frequency Divider with PWM Initialized!\n");
+}
 
-    assign out = a & b;
-endmodule
+uint32_t pwm_output(chip_state_t *chip) {
+  // Increment the counter with each clock cycle
+  chip->counter++;
 
-module or_cell (
-    input wire a,
-    input wire b,
-    output wire out
-    );
+  // Divide the input frequency by clock_divisor
+  if (chip->counter >= chip->clock_divisor) {
+    chip->counter = 0;  // Reset counter
 
-    assign out = a | b;
-endmodule
+    // Toggle PWM state based on duty cycle
+    uint32_t on_time = (chip->duty_cycle * chip->clock_divisor) / 100;
+    chip->pwm_state = (chip->counter < on_time) ? 1 : 0;
 
-module xor_cell (
-    input wire a,
-    input wire b,
-    output wire out
-    );
+    // Write to the PWM_OUT pin using the PWM state
+    pin_write(PWM_OUT, chip->pwm_state);
+  }
+  return chip->pwm_state;
+}
 
-    assign out = a ^ b;
-endmodule
+void chip_update(chip_state_t *chip) {
+  // With a fixed duty cycle, we just need to update the PWM output
+  pwm_output(chip);
+}
 
-module nand_cell (
-    input wire a,
-    input wire b,
-    output wire out
-    );
+void chip_free() {
+  printf("Goodbye from custom chip!\n");
+}
 
-    assign out = !(a&b);
-endmodule
-
-module not_cell (
-    input wire in,
-    output wire out
-    );
-
-    assign out = !in;
-endmodule
-
-module mux_cell (
-    input wire a,
-    input wire b,
-    input wire sel,
-    output wire out
-    );
-
-    assign out = sel ? b : a;
-endmodule
-
-module dff_cell (
-    input wire clk,
-    input wire d,
-    output reg q,
-    output wire notq
-    );
-
-    assign notq = !q;
-    always @(posedge clk)
-        q <= d;
-
-endmodule
-
-module dffsr_cell (
-    input wire clk,
-    input wire d,
-    input wire s,
-    input wire r,
-    output reg q,
-    output wire notq
-    );
-
-    assign notq = !q;
-
-    always @(posedge clk or posedge s or posedge r) begin
-        if (r)
-            q <= 0;
-        else if (s)
-            q <= 1;
-        else
-            q <= d;
-    end
-endmodule
